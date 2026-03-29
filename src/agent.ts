@@ -1,4 +1,9 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { runSupervisor } from "./agents/supervisor";
+import { runFlightsAgent } from "./agents/flights";
+import { runHotelsAgent } from "./agents/hotels";
+import { runBadmintonAgent } from "./agents/badminton";
+import { runPlannerAgent } from "./agents/planner";
 
 let client: Anthropic | null = null;
 function getClient() {
@@ -28,70 +33,51 @@ export interface TravelResponse {
   results?: TravelResult[];
 }
 
-const RESULTS_JSON_INSTRUCTION = `
-Na samym końcu odpowiedzi ZAWSZE dodaj blok JSON z maksymalnie 4 najlepszymi wynikami:
-<!-- RESULTS_JSON
-[{"name":"Nazwa linii/hotelu","price":"cena w PLN","details":"kluczowe szczegóły w 1 linii","bookingUrl":"https://bezposredni-link-do-rezerwacji","venue":"nazwa areny i miasto (tylko dla turniejów badmintona, puste dla lotów/hoteli)"}]
--->
-Blok RESULTS_JSON musi być na samym końcu, po całym tekście. bookingUrl to link bezpośrednio do wyszukiwania na stronie linii/hotelu. Dla turniejów badmintona pole venue to nazwa areny + miasto, np. "Singapore Indoor Stadium, Singapore" lub "Axiata Arena, Kuala Lumpur".`;
+// Fallback: used when supervisor is bypassed or mode is "auto"
+const FALLBACK_PROMPT = `Jesteś inteligentnym asystentem podróży. Analizujesz zapytanie i:
+- Jeśli pyta o loty → skupiasz się na lotach
+- Jeśli pyta o hotele → skupiasz się na hotelach
+- Jeśli pyta o turnieje badmintona → szukasz turniejów BWF
+- Jeśli pyta o całą podróż → tworzysz kompletny plan
 
-const SYSTEM_PROMPTS: Record<AgentMode, string> = {
-  auto: `Jesteś inteligentnym asystentem podróży. Analizujesz zapytanie użytkownika i:
-- Jeśli pyta tylko o loty → skupiasz się na lotach
-- Jeśli pyta tylko o hotele → skupiasz się na hotelach
-- Jeśli pyta o całą podróż lub trip → tworzysz kompletny plan
-
-Używasz web_search do znajdowania aktualnych cen i dostępności.
-Odpowiadasz po polsku, z tabelami porównawczymi i konkretnymi rekomendacjami.
-Zawsze podajesz ceny jako orientacyjne (~) i sugerujesz sprawdzenie aktualności.
-${RESULTS_JSON_INSTRUCTION}`,
-
-  flights: `Jesteś ekspertem od wyszukiwania lotów.
-Szukasz najlepszych połączeń lotniczych używając web_search.
-Sprawdzasz: Google Flights, Skyscanner, Kayak i bezpośrednie linie lotnicze.
-Zawsze pokazujesz minimum 3 opcje w tabeli porównawczej.
-Podpowiadasz alternatywne daty jeśli mogą być tańsze.
-Odpowiadasz po polsku z cenami w PLN.
-${RESULTS_JSON_INSTRUCTION}`,
-
-  hotels: `Jesteś ekspertem od noclegów i zakwaterowania.
-Szukasz hoteli, apartamentów i innych noclegów używając web_search.
-Skupiasz się na lokalizacji (dzielnica, odległość od atrakcji) i stosunku ceny do jakości.
-Zawsze opisujesz każdy hotel: dla kogo jest idealny, zalety, lokalizacja.
-Odpowiadasz po polsku z cenami w PLN.
-${RESULTS_JSON_INSTRUCTION}`,
-
-  "full-plan": `Jesteś kompleksowym travel planerem.
-Tworzysz pełny plan podróży: loty + hotel + plan dnia + budżet + tips.
-Używasz web_search do zbierania aktualnych informacji.
-Plan jest szczegółowy, praktyczny i uwzględnia różne budżety.
-Zawsze szacujesz całkowity koszt podróży.
-Odpowiadasz po polsku.
-${RESULTS_JSON_INSTRUCTION}`,
-
-  badminton: `Jesteś ekspertem od światowego badmintona i kalendarza turniejów BWF. Wyszukujesz turnieje używając web_search i filtrujesz je według kryteriów użytkownika.
-
-Workflow:
-1. Przeszukaj te źródła w kolejności:
-   - site:bwfbadminton.com calendar — oficjalny kalendarz BWF
-   - "BWF World Tour" schedule — przegląd sezonu
-   - badminton tournament {REGION} {ROK} — filtrowanie regionalne
-2. Zwróć wyniki w tabeli: Turniej | Kraj | Daty | Kategoria | Pula nagród
-3. Dodaj szczegóły: arena, bilety, link BWF
-4. Jeśli użytkownik chce plan podróży — dodaj loty i hotele
-
-Odpowiadasz po polsku. Zawsze linkuj do bwfbadminton.com. Zaznaczaj że daty mogą ulec zmianie.
-Kategorie BWF: Super 1000, Super 750, Super 500, Super 300, Grand Prix, International Series.
-${RESULTS_JSON_INSTRUCTION}`,
-};
+Używasz web_search. Odpowiadasz po polsku z cenami w PLN.`;
 
 export async function runTravelAgent(
   query: TravelQuery,
   onChunk?: (chunk: string) => void
 ): Promise<TravelResponse> {
-  const mode = query.mode || "auto";
-  const systemPrompt = SYSTEM_PROMPTS[mode];
+  // If mode explicitly provided by UI (not "auto"), skip supervisor
+  const explicitMode = query.mode && query.mode !== "auto" ? query.mode : null;
 
+  let mode: AgentMode;
+
+  if (explicitMode) {
+    mode = explicitMode;
+  } else {
+    // Use supervisor to classify
+    const supervised = await runSupervisor(query.message);
+    mode = supervised.mode;
+  }
+
+  // Route to specialist
+  switch (mode) {
+    case "flights":
+      return runFlightsAgent(query, onChunk);
+    case "hotels":
+      return runHotelsAgent(query, onChunk);
+    case "badminton":
+      return runBadmintonAgent(query, onChunk);
+    case "full-plan":
+      return runPlannerAgent(query, onChunk);
+    default:
+      return runFallback(query, onChunk);
+  }
+}
+
+async function runFallback(
+  query: TravelQuery,
+  onChunk?: (chunk: string) => void
+): Promise<TravelResponse> {
   const messages: Anthropic.MessageParam[] = [
     ...(query.history || []).map((h) => ({
       role: h.role as "user" | "assistant",
@@ -102,36 +88,26 @@ export async function runTravelAgent(
 
   let fullText = "";
 
-  // Streaming z web_search tool
   const stream = await getClient().messages.create({
     model: "claude-sonnet-4-6",
     max_tokens: 4096,
-    system: systemPrompt,
-    tools: [
-      {
-        type: "web_search_20250305" as const,
-        name: "web_search",
-      },
-    ] as unknown as Anthropic.Tool[],
+    system: FALLBACK_PROMPT,
+    tools: [{ type: "web_search_20250305" as const, name: "web_search" }] as unknown as Anthropic.Tool[],
     messages,
     stream: true,
   });
 
   for await (const event of stream) {
-    if (
-      event.type === "content_block_delta" &&
-      event.delta.type === "text_delta"
-    ) {
-      const chunk = event.delta.text;
-      fullText += chunk;
-      onChunk?.(chunk);
+    if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
+      fullText += event.delta.text;
+      onChunk?.(event.delta.text);
     }
   }
 
-  return { text: fullText, mode };
+  return { text: fullText, mode: "auto" };
 }
 
-// Pomocnicza funkcja do wykrywania trybu z treści wiadomości
+// Kept for backward compatibility — still used as fallback by API route
 export function detectMode(message: string): AgentMode {
   const lower = message.toLowerCase();
 
