@@ -13,16 +13,11 @@ Na samym końcu odpowiedzi ZAWSZE dodaj blok JSON z maksymalnie 4 najlepszymi wy
 [{"name":"Nazwa turnieju","price":"cena biletów w PLN","details":"kraj, daty, kategoria BWF","bookingUrl":"https://bwfbadminton.com/...","venue":"Nazwa areny, Miasto"}]
 -->`;
 
-const BADMINTON_PROMPT = `Jesteś ekspertem od kalendarza turniejów BWF. Używasz web_search.
+const BADMINTON_PROMPT = `Jesteś ekspertem od kalendarza turniejów BWF. Używasz web_search maksymalnie 2 razy.
 
-Szukasz w tej kolejności:
-1. site:bwfbadminton.com calendar
-2. "BWF World Tour" schedule {ROK}
-3. badminton tournament {REGION} {ROK}
-
-Zwracasz tabelę: Turniej | Kraj | Daty | Kategoria | Pula nagród | Arena.
-Zawsze linkujesz do bwfbadminton.com. Zaznaczasz że daty mogą ulec zmianie.
-Kategorie BWF: Super 1000, Super 750, Super 500, Super 300, Grand Prix, International Series.
+Szukaj: site:bwfbadminton.com calendar lub "BWF World Tour" schedule.
+Zwróć tabelę: Turniej | Kraj | Daty | Kategoria. Linkuj do bwfbadminton.com. Bądź zwięzły.
+Kategorie BWF: Super 1000, Super 750, Super 500, Super 300, Grand Prix.
 Odpowiadasz po polsku.
 ${RESULTS_JSON_INSTRUCTION}`;
 
@@ -41,8 +36,8 @@ export async function runBadmintonAgent(
   let fullText = "";
 
   const stream = await getClient().messages.create({
-    model: "claude-sonnet-4-6",
-    max_tokens: 4096,
+    model: "claude-haiku-4-5-20251001",
+    max_tokens: 1500,
     system: BADMINTON_PROMPT,
     tools: [{ type: "web_search_20250305" as const, name: "web_search" }] as unknown as Anthropic.Tool[],
     messages,

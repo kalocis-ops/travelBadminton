@@ -38,7 +38,7 @@ export async function runPlannerAgent(
   // Planner deliberately has NO web_search tool
   const stream = await getClient().messages.create({
     model: "claude-sonnet-4-6",
-    max_tokens: 4096,
+    max_tokens: 2000,
     system: PLANNER_PROMPT,
     messages,
     stream: true,

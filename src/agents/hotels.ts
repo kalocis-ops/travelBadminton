@@ -13,12 +13,10 @@ Na samym końcu odpowiedzi ZAWSZE dodaj blok JSON z maksymalnie 4 najlepszymi wy
 [{"name":"Nazwa hotelu","price":"cena za noc w PLN","details":"lokalizacja i ocena","bookingUrl":"https://link-do-rezerwacji","venue":""}]
 -->`;
 
-const HOTELS_PROMPT = `Jesteś ekspertem od noclegów. Używasz web_search.
+const HOTELS_PROMPT = `Jesteś ekspertem od noclegów. Używasz web_search maksymalnie 2 razy.
 
-Szukasz hoteli, apartamentów i hosteli na Booking.com, Hotels.com, Airbnb.
-Dla każdego opisujesz: lokalizacja (dzielnica, odległość od centrum/areny), ocena, cena/noc.
-Sortujesz od najlepszego stosunku ceny do jakości.
-Odpowiadasz po polsku z cenami w PLN.
+Szukasz hoteli na Booking.com. Pokazujesz 3-4 opcje z lokalizacją i ceną/noc.
+Odpowiadasz po polsku z cenami w PLN. Bądź zwięzły.
 ${RESULTS_JSON_INSTRUCTION}`;
 
 export async function runHotelsAgent(
@@ -37,7 +35,7 @@ export async function runHotelsAgent(
 
   const stream = await getClient().messages.create({
     model: "claude-sonnet-4-6",
-    max_tokens: 4096,
+    max_tokens: 1500,
     system: HOTELS_PROMPT,
     tools: [{ type: "web_search_20250305" as const, name: "web_search" }] as unknown as Anthropic.Tool[],
     messages,

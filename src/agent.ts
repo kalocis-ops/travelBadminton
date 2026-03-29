@@ -90,7 +90,7 @@ async function runFallback(
 
   const stream = await getClient().messages.create({
     model: "claude-sonnet-4-6",
-    max_tokens: 4096,
+    max_tokens: 1500,
     system: FALLBACK_PROMPT,
     tools: [{ type: "web_search_20250305" as const, name: "web_search" }] as unknown as Anthropic.Tool[],
     messages,
