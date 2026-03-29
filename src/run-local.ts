@@ -64,6 +64,7 @@ function printMode() {
     flights: "✈️  Loty",
     hotels: "🏨 Hotele",
     "full-plan": "🗺️  Pełny plan",
+    badminton: "🏸 Badminton",
   };
   console.log(`${c.dim}Tryb: ${c.yellow}${modeLabels[currentMode]}${c.reset}\n`);
 }
