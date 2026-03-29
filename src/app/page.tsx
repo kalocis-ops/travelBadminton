@@ -13,11 +13,13 @@ export default function Home() {
   const [bookingLinks, setBookingLinks] = useState<BookingLink[]>([]);
   const [agentText, setAgentText] = useState<string>("");
   const [currentMode, setCurrentMode] = useState<AgentMode>("flights");
+  const [selectedTournament, setSelectedTournament] = useState<TravelResult | null>(null);
 
   async function handleSearch(query: string, mode: AgentMode, bookingParams: BookingParams) {
     setLoading(true);
     setError(null);
     setResults([]);
+    setSelectedTournament(null);
     setAgentText("");
     setCurrentMode(mode);
     setBookingLinks(generateBookingLinks(bookingParams));
@@ -86,7 +88,83 @@ export default function Home() {
       )}
 
       {!loading && (results.length > 0 || bookingLinks.length > 0) && (
-        <ResultCards results={results} bookingLinks={bookingLinks} mode={currentMode} />
+        <ResultCards
+          results={results}
+          bookingLinks={bookingLinks}
+          mode={currentMode}
+          onSelectTournament={currentMode === "badminton" ? setSelectedTournament : undefined}
+        />
+      )}
+
+      {selectedTournament && (
+        <div style={{
+          marginTop: 24,
+          background: "var(--white)",
+          border: "2px solid var(--accent)",
+          borderRadius: 12,
+          padding: "20px 24px",
+          boxShadow: "var(--shadow-lg)",
+        }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>
+            Wybrany turniej
+          </div>
+          <div style={{ fontWeight: 700, fontSize: 16, color: "var(--text)", marginBottom: 4 }}>
+            {selectedTournament.name}
+          </div>
+          <div style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 16 }}>
+            {selectedTournament.venue || selectedTournament.details}
+          </div>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <button
+              type="button"
+              disabled={loading}
+              onClick={() => {
+                const venue = selectedTournament.venue || selectedTournament.details;
+                handleSearch(
+                  `Zaplanuj podróż z Warszawy do ${venue} na turniej badmintona ${selectedTournament.name}. Daty: ${selectedTournament.details}. Znajdź loty i hotel w pobliżu areny.`,
+                  "full-plan",
+                  { mode: "flights", from: "Warszawa", to: venue }
+                );
+              }}
+              style={{
+                background: "var(--accent)",
+                color: "#fff",
+                border: "none",
+                borderRadius: 6,
+                padding: "12px 20px",
+                fontSize: 14,
+                fontWeight: 700,
+                cursor: loading ? "not-allowed" : "pointer",
+              }}
+            >
+              ✈ Zaplanuj całą podróż
+            </button>
+            <button
+              type="button"
+              disabled={loading}
+              onClick={() => {
+                const venue = selectedTournament.venue || selectedTournament.details;
+                handleSearch(
+                  `Hotele w pobliżu ${venue}. Turniej ${selectedTournament.name}, daty: ${selectedTournament.details}.`,
+                  "hotels",
+                  { mode: "hotels", city: venue }
+                );
+              }}
+              style={{
+                background: "transparent",
+                color: "var(--accent)",
+                border: "2px solid var(--accent)",
+                borderRadius: 6,
+                padding: "12px 20px",
+                fontSize: 14,
+                fontWeight: 700,
+                cursor: loading ? "not-allowed" : "pointer",
+              }}
+            >
+              🏨 Hotele w pobliżu
+            </button>
+          </div>
+        </div>
       )}
 
       {!loading && agentText && (
