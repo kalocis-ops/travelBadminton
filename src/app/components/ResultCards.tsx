@@ -17,7 +17,7 @@ export default function ResultCards({ results, bookingLinks, mode, onSelectTourn
     <div style={{ marginTop: 32 }}>
       {results.length > 0 && (
         <>
-          <h2 style={{ fontSize: 18, fontWeight: 700, color: "var(--text)", marginBottom: 16 }}>
+          <h2 style={{ fontSize: 28, fontWeight: 700, color: "var(--text)", marginBottom: 20, letterSpacing: "-0.02em" }}>
             {mode === "hotels" ? "🏨 Znalezione noclegi" : mode === "badminton" ? "🏸 Turnieje BWF" : "✈ Znalezione loty"}
           </h2>
           <div style={{
@@ -29,18 +29,18 @@ export default function ResultCards({ results, bookingLinks, mode, onSelectTourn
             {results.map((result, i) => (
               <div key={i} style={{
                 background: "var(--white)",
-                border: "1px solid var(--border)",
-                borderRadius: "var(--radius)",
-                padding: 20,
-                boxShadow: "var(--shadow)",
+                border: "none",
+                borderRadius: 20,
+                padding: "24px",
+                boxShadow: "var(--shadow-lg)",
                 display: "flex",
                 flexDirection: "column",
                 gap: 8,
               }}>
-                <div style={{ fontWeight: 700, fontSize: 16, color: "var(--text)" }}>
+                <div style={{ fontWeight: 700, fontSize: 17, color: "var(--text)", letterSpacing: "-0.02em", lineHeight: 1.3 }}>
                   {result.name}
                 </div>
-                <div style={{ fontSize: 22, fontWeight: 800, color: "var(--accent)" }}>
+                <div style={{ fontSize: 28, fontWeight: 800, color: "var(--text)", letterSpacing: "-0.03em" }}>
                   {result.price}
                 </div>
                 <div style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5 }}>
@@ -51,19 +51,20 @@ export default function ResultCards({ results, bookingLinks, mode, onSelectTourn
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
-                    marginTop: 8,
-                    background: "var(--accent)",
+                    marginTop: "auto",
+                    background: "var(--text)",
                     color: "#fff",
-                    borderRadius: 6,
-                    padding: "10px 0",
+                    borderRadius: 980,
+                    padding: "11px 0",
                     textAlign: "center",
                     fontWeight: 600,
                     fontSize: 14,
                     display: "block",
                     cursor: "pointer",
+                    letterSpacing: "-0.01em",
                   }}
-                  onMouseOver={(e) => (e.currentTarget.style.background = "var(--accent-hover)")}
-                  onMouseOut={(e) => (e.currentTarget.style.background = "var(--accent)")}
+                  onMouseOver={(e) => (e.currentTarget.style.background = "#3a3a3c")}
+                  onMouseOut={(e) => (e.currentTarget.style.background = "var(--text)")}
                 >
                   Rezerwuj →
                 </a>
@@ -104,7 +105,7 @@ export default function ResultCards({ results, bookingLinks, mode, onSelectTourn
 
       {bookingLinks.length > 0 && (
         <>
-          <h3 style={{ fontSize: 15, fontWeight: 600, color: "var(--text-muted)", marginBottom: 12 }}>
+          <h3 style={{ fontSize: 13, fontWeight: 600, color: "var(--text-muted)", marginBottom: 12, letterSpacing: "0.02em", textTransform: "uppercase" }}>
             Porównaj też na:
           </h3>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -115,15 +116,16 @@ export default function ResultCards({ results, bookingLinks, mode, onSelectTourn
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
-                  border: "1px solid var(--border)",
-                  borderRadius: 6,
-                  padding: "8px 14px",
+                  border: "1px solid rgba(0,0,0,0.1)",
+                  borderRadius: 980,
+                  padding: "8px 18px",
                   background: "var(--white)",
                   fontSize: 13,
                   fontWeight: 500,
                   color: "var(--text)",
                   boxShadow: "var(--shadow)",
                   cursor: "pointer",
+                  letterSpacing: "-0.01em",
                 }}
               >
                 {link.icon} {link.name}
