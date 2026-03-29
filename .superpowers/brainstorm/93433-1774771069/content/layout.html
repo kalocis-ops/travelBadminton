@@ -1,0 +1,82 @@
+<h2>Układ strony głównej</h2>
+<p class="subtitle">Jak użytkownik wchodzi w interakcję z agentem?</p>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f8fafc;padding:16px;font-family:sans-serif;min-height:160px;">
+      <div style="text-align:center;padding:20px 10px;">
+        <div style="color:#1e293b;font-size:14px;font-weight:700;margin-bottom:12px;">✈ Gdzie chcesz lecieć?</div>
+        <div style="border:1px solid #e2e8f0;border-radius:8px;padding:10px;background:#fff;color:#94a3b8;font-size:12px;max-width:260px;margin:0 auto;">
+          "Loty z Warszawy do Dublinu, 3 kwietnia..."
+        </div>
+        <div style="background:#2563eb;color:#fff;border-radius:6px;padding:7px 20px;font-size:12px;font-weight:600;display:inline-block;margin-top:10px;">Szukaj</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Wyszukiwarka (jak Google)</h3>
+      <p>Jedno pole tekstowe na środku. Wpisujesz zapytanie po polsku, agent zwraca wyniki poniżej. Prosto i szybko.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f8fafc;padding:16px;font-family:sans-serif;min-height:160px;">
+      <div style="border-bottom:1px solid #e2e8f0;display:flex;gap:8px;padding-bottom:8px;margin-bottom:10px;">
+        <div style="background:#2563eb;color:#fff;border-radius:4px;padding:4px 10px;font-size:11px;font-weight:600;">✈ Loty</div>
+        <div style="color:#64748b;border-radius:4px;padding:4px 10px;font-size:11px;">🏨 Hotele</div>
+        <div style="color:#64748b;border-radius:4px;padding:4px 10px;font-size:11px;">🗺 Plan</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px;">
+        <div style="border:1px solid #e2e8f0;border-radius:6px;padding:8px;background:#fff;">
+          <div style="color:#94a3b8;font-size:10px;">SKĄD</div>
+          <div style="color:#1e293b;font-weight:600;">Warszawa</div>
+        </div>
+        <div style="border:1px solid #e2e8f0;border-radius:6px;padding:8px;background:#fff;">
+          <div style="color:#94a3b8;font-size:10px;">DOKĄD</div>
+          <div style="color:#1e293b;font-weight:600;">Dublin</div>
+        </div>
+        <div style="border:1px solid #e2e8f0;border-radius:6px;padding:8px;background:#fff;">
+          <div style="color:#94a3b8;font-size:10px;">DATA</div>
+          <div style="color:#1e293b;font-weight:600;">3 kwi 2026</div>
+        </div>
+        <div style="border:1px solid #e2e8f0;border-radius:6px;padding:8px;background:#fff;">
+          <div style="color:#94a3b8;font-size:10px;">OSOBY</div>
+          <div style="color:#1e293b;font-weight:600;">1 osoba</div>
+        </div>
+      </div>
+      <div style="background:#2563eb;color:#fff;border-radius:6px;padding:6px;text-align:center;font-size:11px;font-weight:600;margin-top:8px;">Szukaj lotów →</div>
+    </div>
+    <div class="card-body">
+      <h3>B — Formularze (jak Booking.com)</h3>
+      <p>Zakładki Loty / Hotele / Plan. Pola: skąd, dokąd, data, osoby. Bardziej ustrukturyzowane.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f8fafc;padding:16px;font-family:sans-serif;min-height:160px;">
+      <div style="display:flex;flex-direction:column;gap:8px;max-height:140px;overflow:hidden;">
+        <div style="display:flex;justify-content:flex-start;">
+          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px 12px 12px 2px;padding:8px 12px;font-size:11px;color:#1e293b;max-width:75%;">
+            Znajdź loty z Warszawy do Dublinu 3 kwi
+          </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;">
+          <div style="background:#2563eb;border-radius:12px 12px 2px 12px;padding:8px 12px;font-size:11px;color:#fff;max-width:80%;">
+            Znalazłem 3 opcje! Ryanair od 350 PLN... <span style="opacity:0.7">[Rezerwuj →]</span>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:flex-start;">
+          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px 12px 12px 2px;padding:8px 12px;font-size:11px;color:#1e293b;max-width:75%;">
+            A hotele blisko centrum?
+          </div>
+        </div>
+      </div>
+      <div style="border:1px solid #e2e8f0;border-radius:8px;padding:6px 10px;background:#fff;font-size:11px;color:#94a3b8;margin-top:8px;">
+        Napisz zapytanie...
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Chat (jak Claude)</h3>
+      <p>Interfejs konwersacyjny. Piszesz naturalnie, agent odpowiada z wynikami i linkami. Możesz dopytywać.</p>
+    </div>
+  </div>
+</div>
