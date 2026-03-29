@@ -87,14 +87,16 @@ export default function SearchForm({ onSearch, loading }: Props) {
   }
 
   const inputStyle: React.CSSProperties = {
-    border: "1px solid var(--border)",
-    borderRadius: 6,
-    padding: "10px 12px",
-    fontSize: 14,
+    border: "1px solid rgba(0,0,0,0.1)",
+    borderRadius: 10,
+    padding: "11px 14px",
+    fontSize: 15,
     color: "var(--text)",
-    background: "var(--white)",
+    background: "rgba(255,255,255,0.7)",
     width: "100%",
     outline: "none",
+    fontFamily: "inherit",
+    letterSpacing: "-0.01em",
   };
 
   const labelStyle: React.CSSProperties = {
@@ -102,17 +104,19 @@ export default function SearchForm({ onSearch, loading }: Props) {
     fontWeight: 600,
     color: "var(--text-muted)",
     textTransform: "uppercase",
-    letterSpacing: "0.05em",
-    marginBottom: 4,
+    letterSpacing: "0.06em",
+    marginBottom: 6,
     display: "block",
   };
 
   return (
     <form onSubmit={handleSubmit} style={{
-      background: "var(--white)",
-      border: "1px solid var(--border)",
-      borderRadius: 12,
-      boxShadow: "var(--shadow-lg)",
+      background: "rgba(255, 255, 255, 0.82)",
+      backdropFilter: "blur(20px)",
+      WebkitBackdropFilter: "blur(20px)",
+      border: "1px solid rgba(255, 255, 255, 0.6)",
+      borderRadius: 20,
+      boxShadow: "0 8px 40px rgba(0, 0, 0, 0.10), 0 1px 0 rgba(255,255,255,0.8) inset",
       overflow: "hidden",
     }}>
       <div style={{ display: "flex", borderBottom: "1px solid var(--border)" }}>
@@ -122,15 +126,16 @@ export default function SearchForm({ onSearch, loading }: Props) {
             type="button"
             onClick={() => set("mode", tab.key)}
             style={{
-              padding: "14px 20px",
-              fontSize: 14,
-              fontWeight: state.mode === tab.key ? 700 : 500,
-              color: state.mode === tab.key ? "var(--accent)" : "var(--text-muted)",
+              padding: "14px 22px",
+              fontSize: 13,
+              fontWeight: state.mode === tab.key ? 600 : 400,
+              color: state.mode === tab.key ? "var(--text)" : "var(--text-muted)",
               background: "none",
               border: "none",
-              borderBottom: state.mode === tab.key ? "2px solid var(--accent)" : "2px solid transparent",
+              borderBottom: state.mode === tab.key ? "2px solid var(--text)" : "2px solid transparent",
               cursor: "pointer",
               marginBottom: -1,
+              letterSpacing: "-0.01em",
             }}
           >
             {tab.label}
@@ -239,15 +244,17 @@ export default function SearchForm({ onSearch, loading }: Props) {
           disabled={loading}
           style={{
             marginTop: 16,
-            background: loading ? "var(--text-muted)" : "var(--accent)",
+            background: loading ? "rgba(0,0,0,0.3)" : "var(--text)",
             color: "#fff",
             border: "none",
-            borderRadius: 6,
-            padding: "12px 28px",
+            borderRadius: 980,
+            padding: "14px 28px",
             fontSize: 15,
-            fontWeight: 700,
+            fontWeight: 600,
             cursor: loading ? "not-allowed" : "pointer",
             width: "100%",
+            letterSpacing: "-0.01em",
+            fontFamily: "inherit",
           }}
         >
           {loading ? "Szukam..." : "Szukaj"}
