@@ -7,9 +7,10 @@ interface Props {
   results: TravelResult[];
   bookingLinks: BookingLink[];
   mode: "flights" | "hotels" | "full-plan" | "auto" | "badminton";
+  onSelectTournament?: (result: TravelResult) => void;
 }
 
-export default function ResultCards({ results, bookingLinks, mode }: Props) {
+export default function ResultCards({ results, bookingLinks, mode, onSelectTournament }: Props) {
   if (results.length === 0 && bookingLinks.length === 0) return null;
 
   return (
@@ -66,6 +67,35 @@ export default function ResultCards({ results, bookingLinks, mode }: Props) {
                 >
                   Rezerwuj →
                 </a>
+                {mode === "badminton" && onSelectTournament && (
+                  <button
+                    type="button"
+                    onClick={() => onSelectTournament(result)}
+                    style={{
+                      marginTop: 4,
+                      background: "transparent",
+                      color: "var(--accent)",
+                      border: "2px solid var(--accent)",
+                      borderRadius: 6,
+                      padding: "10px 0",
+                      textAlign: "center",
+                      fontWeight: 600,
+                      fontSize: 14,
+                      width: "100%",
+                      cursor: "pointer",
+                    }}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.background = "var(--accent)";
+                      e.currentTarget.style.color = "#fff";
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.background = "transparent";
+                      e.currentTarget.style.color = "var(--accent)";
+                    }}
+                  >
+                    Wybierz turniej →
+                  </button>
+                )}
               </div>
             ))}
           </div>
