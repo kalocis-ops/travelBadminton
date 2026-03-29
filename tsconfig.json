@@ -10,8 +10,6 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "outDir": "dist",
-    "rootDir": "src",
     "resolveJsonModule": true,
     "moduleResolution": "node",
     "paths": {
