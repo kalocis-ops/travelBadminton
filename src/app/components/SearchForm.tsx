@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { AgentMode } from "../../agent";
 import { BookingParams } from "../../deeplinks";
 
@@ -29,6 +29,237 @@ const TABS: { key: AgentMode; label: string }[] = [
   { key: "hotels", label: "🏨 Hotele" },
   { key: "full-plan", label: "🗺 Pełny plan" },
 ];
+
+const CITIES = [
+  "Warszawa", "Kraków", "Gdańsk", "Wrocław", "Poznań", "Katowice", "Łódź", "Szczecin", "Lublin", "Rzeszów",
+  "Londyn", "Paryż", "Amsterdam", "Barcelona", "Rzym", "Berlin", "Wiedeń", "Praga", "Budapeszt", "Madryt",
+  "Dubaj", "Bangkok", "Kuala Lumpur", "Singapur", "Tokio", "Seul", "Jakarta", "Mumbaj", "Guangzhou",
+  "Nowy Jork", "Los Angeles", "Toronto",
+];
+
+const REGIONS = [
+  "Europa", "Azja", "Azja Wschodnia", "Azja Południowo-Wschodnia", "Indie", "Cały świat",
+  "Ameryka", "Oceania", "Afryka", "Bliski Wschód",
+];
+
+const MONTHS = ["Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec",
+  "Lipiec", "Sierpień", "Wrzesień", "Październik", "Listopad", "Grudzień"];
+
+function Autocomplete({
+  value, onChange, suggestions, placeholder, required, inputStyle,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  suggestions: string[];
+  placeholder?: string;
+  required?: boolean;
+  inputStyle: React.CSSProperties;
+}) {
+  const [open, setOpen] = useState(false);
+  const [hovered, setHovered] = useState(-1);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const filtered = value.length === 0
+    ? suggestions.slice(0, 8)
+    : suggestions.filter((s) => s.toLowerCase().includes(value.toLowerCase())).slice(0, 8);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  return (
+    <div ref={containerRef} style={{ position: "relative" }}>
+      <input
+        value={value}
+        onChange={(e) => { onChange(e.target.value); setOpen(true); setHovered(-1); }}
+        onFocus={() => setOpen(true)}
+        placeholder={placeholder}
+        required={required}
+        autoComplete="off"
+        style={inputStyle}
+      />
+      {open && filtered.length > 0 && (
+        <div style={{
+          position: "absolute",
+          top: "calc(100% + 4px)",
+          left: 0,
+          right: 0,
+          background: "#fff",
+          border: "1px solid rgba(0,0,0,0.1)",
+          borderRadius: 12,
+          boxShadow: "0 8px 32px rgba(0,0,0,0.14)",
+          zIndex: 200,
+          overflow: "hidden",
+        }}>
+          {filtered.map((s, i) => (
+            <div
+              key={s}
+              onMouseEnter={() => setHovered(i)}
+              onMouseLeave={() => setHovered(-1)}
+              onMouseDown={(e) => { e.preventDefault(); onChange(s); setOpen(false); }}
+              style={{
+                padding: "10px 14px",
+                fontSize: 14,
+                cursor: "pointer",
+                background: hovered === i ? "rgba(0,113,227,0.06)" : "transparent",
+                color: "var(--text)",
+                letterSpacing: "-0.01em",
+                borderBottom: i < filtered.length - 1 ? "1px solid rgba(0,0,0,0.05)" : "none",
+              }}
+            >
+              {s}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DateInput({ value, onChange, required, inputStyle }: {
+  value: string;
+  onChange: (v: string) => void;
+  required?: boolean;
+  inputStyle: React.CSSProperties;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  return (
+    <div style={{ position: "relative" }}>
+      <input
+        ref={inputRef}
+        type="date"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        required={required}
+        style={{ ...inputStyle, paddingRight: 36, cursor: "pointer" }}
+        onClick={() => {
+          try { inputRef.current?.showPicker(); } catch { /* fallback — browser opened natively */ }
+        }}
+      />
+      <span
+        onClick={() => {
+          try { inputRef.current?.showPicker(); } catch { /* */ }
+          inputRef.current?.focus();
+        }}
+        style={{
+          position: "absolute",
+          right: 12,
+          top: "50%",
+          transform: "translateY(-50%)",
+          fontSize: 15,
+          cursor: "pointer",
+          pointerEvents: "none",
+          opacity: 0.45,
+        }}
+      >
+        📅
+      </span>
+    </div>
+  );
+}
+
+function MonthPicker({ value, onChange, inputStyle }: {
+  value: string;
+  onChange: (v: string) => void;
+  inputStyle: React.CSSProperties;
+}) {
+  const currentYear = new Date().getFullYear();
+  const years = [currentYear, currentYear + 1, currentYear + 2];
+
+  const [month, setMonth] = useState("");
+  const [year, setYear] = useState(String(currentYear));
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Sync from external value
+    if (!value) { setMonth(""); return; }
+    const parts = value.split(" ");
+    if (parts.length === 2) { setMonth(parts[0]); setYear(parts[1]); }
+  }, [value]);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  function select(m: string) {
+    setMonth(m);
+    onChange(`${m} ${year}`);
+    setOpen(false);
+  }
+
+  return (
+    <div ref={ref} style={{ position: "relative" }}>
+      <div style={{ display: "flex", gap: 6 }}>
+        <div style={{ flex: 1, position: "relative" }}>
+          <input
+            readOnly
+            value={month}
+            onClick={() => setOpen((o) => !o)}
+            placeholder="Miesiąc"
+            style={{ ...inputStyle, cursor: "pointer", paddingRight: 28 }}
+          />
+          <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", opacity: 0.4, fontSize: 11, pointerEvents: "none" }}>▼</span>
+        </div>
+        <select
+          value={year}
+          onChange={(e) => { setYear(e.target.value); if (month) onChange(`${month} ${e.target.value}`); }}
+          style={{ ...inputStyle, width: 90, cursor: "pointer" }}
+        >
+          {years.map((y) => <option key={y} value={y}>{y}</option>)}
+        </select>
+      </div>
+
+      {open && (
+        <div style={{
+          position: "absolute",
+          top: "calc(100% + 4px)",
+          left: 0,
+          right: 0,
+          background: "#fff",
+          border: "1px solid rgba(0,0,0,0.1)",
+          borderRadius: 12,
+          boxShadow: "0 8px 32px rgba(0,0,0,0.14)",
+          zIndex: 200,
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          padding: 8,
+          gap: 4,
+        }}>
+          {MONTHS.map((m) => (
+            <div
+              key={m}
+              onMouseDown={(e) => { e.preventDefault(); select(m); }}
+              style={{
+                padding: "8px 4px",
+                textAlign: "center",
+                cursor: "pointer",
+                borderRadius: 8,
+                fontSize: 13,
+                fontWeight: month === m ? 600 : 400,
+                background: month === m ? "rgba(0,113,227,0.1)" : "transparent",
+                color: month === m ? "var(--accent)" : "var(--text)",
+              }}
+            >
+              {m}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function SearchForm({ onSearch, loading }: Props) {
   const [state, setState] = useState<SearchState>({
@@ -97,6 +328,7 @@ export default function SearchForm({ onSearch, loading }: Props) {
     outline: "none",
     fontFamily: "inherit",
     letterSpacing: "-0.01em",
+    boxSizing: "border-box",
   };
 
   const labelStyle: React.CSSProperties = {
@@ -117,9 +349,9 @@ export default function SearchForm({ onSearch, loading }: Props) {
       border: "1px solid rgba(255, 255, 255, 0.6)",
       borderRadius: 20,
       boxShadow: "0 8px 40px rgba(0, 0, 0, 0.10), 0 1px 0 rgba(255,255,255,0.8) inset",
-      overflow: "hidden",
+      overflow: "visible",
     }}>
-      <div style={{ display: "flex", borderBottom: "1px solid var(--border)" }}>
+      <div style={{ display: "flex", borderBottom: "1px solid var(--border)", borderRadius: "20px 20px 0 0", overflow: "hidden" }}>
         {TABS.map((tab) => (
           <button
             key={tab.key}
@@ -148,15 +380,15 @@ export default function SearchForm({ onSearch, loading }: Props) {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", gap: 12, alignItems: "end" }}>
             <div>
               <label style={labelStyle}>Skąd</label>
-              <input style={inputStyle} placeholder="np. Warszawa" value={state.from} onChange={(e) => set("from", e.target.value)} required />
+              <Autocomplete value={state.from} onChange={(v) => set("from", v)} suggestions={CITIES} placeholder="np. Warszawa" required inputStyle={inputStyle} />
             </div>
             <div>
               <label style={labelStyle}>Dokąd</label>
-              <input style={inputStyle} placeholder="np. Dublin" value={state.to} onChange={(e) => set("to", e.target.value)} required />
+              <Autocomplete value={state.to} onChange={(v) => set("to", v)} suggestions={CITIES} placeholder="np. Dublin" required inputStyle={inputStyle} />
             </div>
             <div>
               <label style={labelStyle}>Data wylotu</label>
-              <input style={inputStyle} type="date" value={state.date} onChange={(e) => set("date", e.target.value)} required />
+              <DateInput value={state.date} onChange={(v) => set("date", v)} required inputStyle={inputStyle} />
             </div>
             <div>
               <label style={labelStyle}>Osoby</label>
@@ -169,15 +401,15 @@ export default function SearchForm({ onSearch, loading }: Props) {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", gap: 12, alignItems: "end" }}>
             <div>
               <label style={labelStyle}>Miasto</label>
-              <input style={inputStyle} placeholder="np. Dublin" value={state.city} onChange={(e) => set("city", e.target.value)} required />
+              <Autocomplete value={state.city} onChange={(v) => set("city", v)} suggestions={CITIES} placeholder="np. Dublin" required inputStyle={inputStyle} />
             </div>
             <div>
               <label style={labelStyle}>Przyjazd</label>
-              <input style={inputStyle} type="date" value={state.date} onChange={(e) => set("date", e.target.value)} required />
+              <DateInput value={state.date} onChange={(v) => set("date", v)} required inputStyle={inputStyle} />
             </div>
             <div>
               <label style={labelStyle}>Wyjazd</label>
-              <input style={inputStyle} type="date" value={state.dateTo} onChange={(e) => set("dateTo", e.target.value)} required />
+              <DateInput value={state.dateTo} onChange={(v) => set("dateTo", v)} required inputStyle={inputStyle} />
             </div>
             <div>
               <label style={labelStyle}>Osoby</label>
@@ -190,19 +422,19 @@ export default function SearchForm({ onSearch, loading }: Props) {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr auto", gap: 12, alignItems: "end" }}>
             <div>
               <label style={labelStyle}>Skąd</label>
-              <input style={inputStyle} placeholder="np. Warszawa" value={state.from} onChange={(e) => set("from", e.target.value)} required />
+              <Autocomplete value={state.from} onChange={(v) => set("from", v)} suggestions={CITIES} placeholder="np. Warszawa" required inputStyle={inputStyle} />
             </div>
             <div>
               <label style={labelStyle}>Dokąd</label>
-              <input style={inputStyle} placeholder="np. Dublin" value={state.to} onChange={(e) => set("to", e.target.value)} required />
+              <Autocomplete value={state.to} onChange={(v) => set("to", v)} suggestions={CITIES} placeholder="np. Dublin" required inputStyle={inputStyle} />
             </div>
             <div>
               <label style={labelStyle}>Wylot</label>
-              <input style={inputStyle} type="date" value={state.date} onChange={(e) => set("date", e.target.value)} required />
+              <DateInput value={state.date} onChange={(v) => set("date", v)} required inputStyle={inputStyle} />
             </div>
             <div>
               <label style={labelStyle}>Powrót</label>
-              <input style={inputStyle} type="date" value={state.dateTo} onChange={(e) => set("dateTo", e.target.value)} />
+              <DateInput value={state.dateTo} onChange={(v) => set("dateTo", v)} inputStyle={inputStyle} />
             </div>
             <div>
               <label style={labelStyle}>Osoby</label>
@@ -215,11 +447,11 @@ export default function SearchForm({ onSearch, loading }: Props) {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, alignItems: "end" }}>
             <div>
               <label style={labelStyle}>Okres</label>
-              <input style={inputStyle} placeholder="np. kwiecień 2026" value={state.badmintonPeriod} onChange={(e) => set("badmintonPeriod", e.target.value)} />
+              <MonthPicker value={state.badmintonPeriod} onChange={(v) => set("badmintonPeriod", v)} inputStyle={inputStyle} />
             </div>
             <div>
               <label style={labelStyle}>Region</label>
-              <input style={inputStyle} placeholder="np. Europa, Azja, cały świat" value={state.badmintonRegion} onChange={(e) => set("badmintonRegion", e.target.value)} />
+              <Autocomplete value={state.badmintonRegion} onChange={(v) => set("badmintonRegion", v)} suggestions={REGIONS} placeholder="np. Europa, Azja" inputStyle={inputStyle} />
             </div>
             <div>
               <label style={labelStyle}>Kategoria BWF</label>
