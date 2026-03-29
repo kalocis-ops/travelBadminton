@@ -24,15 +24,15 @@ interface Props {
 }
 
 const TABS: { key: AgentMode; label: string }[] = [
+  { key: "badminton", label: "🏸 Badminton" },
   { key: "flights", label: "✈ Loty" },
   { key: "hotels", label: "🏨 Hotele" },
   { key: "full-plan", label: "🗺 Pełny plan" },
-  { key: "badminton", label: "🏸 Badminton" },
 ];
 
 export default function SearchForm({ onSearch, loading }: Props) {
   const [state, setState] = useState<SearchState>({
-    mode: "flights",
+    mode: "badminton",
     from: "",
     to: "",
     city: "",
