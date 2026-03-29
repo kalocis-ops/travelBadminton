@@ -19,6 +19,7 @@ export interface TravelResult {
   price: string;
   details: string;
   bookingUrl: string;
+  venue?: string;
 }
 
 export interface TravelResponse {
@@ -30,9 +31,9 @@ export interface TravelResponse {
 const RESULTS_JSON_INSTRUCTION = `
 Na samym końcu odpowiedzi ZAWSZE dodaj blok JSON z maksymalnie 4 najlepszymi wynikami:
 <!-- RESULTS_JSON
-[{"name":"Nazwa linii/hotelu","price":"cena w PLN","details":"kluczowe szczegóły w 1 linii","bookingUrl":"https://bezposredni-link-do-rezerwacji"}]
+[{"name":"Nazwa linii/hotelu","price":"cena w PLN","details":"kluczowe szczegóły w 1 linii","bookingUrl":"https://bezposredni-link-do-rezerwacji","venue":"nazwa areny i miasto (tylko dla turniejów badmintona, puste dla lotów/hoteli)"}]
 -->
-Blok RESULTS_JSON musi być na samym końcu, po całym tekście. bookingUrl to link bezpośrednio do wyszukiwania na stronie linii/hotelu.`;
+Blok RESULTS_JSON musi być na samym końcu, po całym tekście. bookingUrl to link bezpośrednio do wyszukiwania na stronie linii/hotelu. Dla turniejów badmintona pole venue to nazwa areny + miasto, np. "Singapore Indoor Stadium, Singapore" lub "Axiata Arena, Kuala Lumpur".`;
 
 const SYSTEM_PROMPTS: Record<AgentMode, string> = {
   auto: `Jesteś inteligentnym asystentem podróży. Analizujesz zapytanie użytkownika i:
